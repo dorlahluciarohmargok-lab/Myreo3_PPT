@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apple Q2 FY2026 Earnings Report</title>
+<style>
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif; background: #000; color: #f5f5f7; -webkit-font-smoothing: antialiased; }
+
+/* ===== SLIDE ENGINE ===== */
+.slide-deck { width: 100%; height: 100%; position: relative; }
+.slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 60px 80px; opacity: 0; transform: scale(0.95); transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94); pointer-events: none; overflow: hidden; }
+.slide.active { opacity: 1; transform: scale(1); pointer-events: all; z-index: 10; }
+
+/* ===== NAVIGATION ===== */
+.nav-controls { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; z-index: 1000; }
+.nav-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.3); cursor: pointer; transition: all 0.3s; }
+.nav-dot.active { background: #fff; transform: scale(1.3); }
+.nav-arrows { position: fixed; top: 50%; z-index: 1000; }
+.nav-arrow { position: fixed; top: 50%; transform: translateY(-50%); width: 50px; height: 50px; border: none; background: rgba(255,255,255,0.08); backdrop-filter: blur(10px); border-radius: 50%; color: #fff; font-size: 20px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; }
+.nav-arrow:hover { background: rgba(255,255,255,0.15); }
+.nav-arrow.prev { left: 30px; }
+.nav-arrow.next { right: 30px; }
+.slide-counter { position: fixed; top: 30px; right: 40px; font-size: 13px; color: rgba(255,255,255,0.5); z-index: 1000; font-weight: 300; }
+
+/* ===== TYPOGRAPHY ===== */
+.hero-title { font-size: clamp(48px, 7vw, 96px); font-weight: 700; letter-spacing: -0.03em; line-height: 1.05; text-align: center; background: linear-gradient(135deg, #fff 0%, #a8a8a8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.hero-subtitle { font-size: clamp(20px, 2.5vw, 32px); font-weight: 300; color: rgba(255,255,255,0.7); margin-top: 20px; text-align: center; letter-spacing: -0.01em; }
+.section-title { font-size: clamp(36px, 5vw, 64px); font-weight: 700; letter-spacing: -0.02em; text-align: center; margin-bottom: 10px; }
+.section-subtitle { font-size: clamp(16px, 2vw, 22px); font-weight: 300; color: rgba(255,255,255,0.6); text-align: center; margin-bottom: 50px; }
+.gradient-text { background: linear-gradient(90deg, #2997ff, #5ac8fa, #30d158); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.gradient-gold { background: linear-gradient(135deg, #f7ce68, #fbab7e, #f7ce68); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+/* ===== CARDS & GRIDS ===== */
+.metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; width: 100%; max-width: 1100px; }
+.metric-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 36px 28px; text-align: center; backdrop-filter: blur(20px); transition: all 0.4s; }
+.metric-card:hover { background: rgba(255,255,255,0.08); transform: translateY(-4px); border-color: rgba(255,255,255,0.15); }
+.metric-value { font-size: clamp(32px, 4vw, 48px); font-weight: 700; margin-bottom: 8px; }
+.metric-label { font-size: 14px; color: rgba(255,255,255,0.5); font-weight: 400; text-transform: uppercase; letter-spacing: 0.05em; }
+.metric-change { font-size: 15px; color: #30d158; margin-top: 8px; font-weight: 500; }
+
+/* ===== CHART CONTAINERS ===== */
+.chart-container { width: 100%; max-width: 1000px; display: flex; align-items: center; justify-content: center; gap: 60px; }
+.chart-area { position: relative; }
+.chart-legend { display: flex; flex-direction: column; gap: 14px; }
+.legend-item { display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 400; }
+.legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+.legend-value { color: rgba(255,255,255,0.5); margin-left: auto; padding-left: 20px; }
+
+/* ===== DONUT CHART ===== */
+.donut-chart { width: 300px; height: 300px; border-radius: 50%; position: relative; }
+.donut-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 160px; height: 160px; background: #000; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.donut-center-value { font-size: 28px; font-weight: 700; }
+.donut-center-label { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+
+/* ===== BAR CHART ===== */
+.bar-chart { display: flex; align-items: flex-end; gap: 20px; height: 280px; padding: 20px 0; }
+.bar-group { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.bar-wrapper { display: flex; align-items: flex-end; gap: 6px; height: 220px; }
+.bar { width: 36px; border-radius: 8px 8px 4px 4px; transition: height 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); position: relative; }
+.bar-label { font-size: 12px; color: rgba(255,255,255,0.5); white-space: nowrap; }
+.bar-value { position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 600; white-space: nowrap; }
+
+/* ===== LINE CHART ===== */
+.line-chart-wrapper { width: 100%; max-width: 900px; height: 300px; position: relative; padding: 20px 0; }
+.line-chart-svg { width: 100%; height: 100%; }
+
+/* ===== HORIZONTAL BAR ===== */
+.h-bar-chart { width: 100%; max-width: 800px; display: flex; flex-direction: column; gap: 20px; }
+.h-bar-item { display: flex; align-items: center; gap: 16px; }
+.h-bar-label { width: 140px; font-size: 14px; font-weight: 500; text-align: right; flex-shrink: 0; }
+.h-bar-track { flex: 1; height: 32px; background: rgba(255,255,255,0.05); border-radius: 16px; overflow: hidden; position: relative; }
+.h-bar-fill { height: 100%; border-radius: 16px; transition: width 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); display: flex; align-items: center; justify-content: flex-end; padding-right: 14px; font-size: 13px; font-weight: 600; }
+.h-bar-value { width: 80px; font-size: 14px; font-weight: 600; text-align: left; flex-shrink: 0; padding-left: 12px; }
+
+/* ===== COMPARISON TABLE ===== */
+.comparison-table { width: 100%; max-width: 900px; border-collapse: separate; border-spacing: 0; }
+.comparison-table th { padding: 16px 24px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left; }
+.comparison-table td { padding: 18px 24px; font-size: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.comparison-table tr:last-child td { border-bottom: none; }
+.comparison-table .highlight { color: #30d158; font-weight: 600; }
+
+/* ===== SPECIAL SLIDES ===== */
+.slide-cover { background: radial-gradient(ellipse at 50% 50%, rgba(41,151,255,0.08) 0%, transparent 70%); }
+.slide-dark { background: #000; }
+.slide-gradient { background: linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 100%); }
+.apple-logo { font-size: 64px; margin-bottom: 30px; opacity: 0.9; }
+.tag-line { display: inline-block; padding: 8px 20px; border-radius: 20px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); font-size: 13px; font-weight: 500; letter-spacing: 0.02em; color: rgba(255,255,255,0.7); margin-bottom: 30px; }
+
+/* ===== GAUGE CHART ===== */
+.gauge-container { display: flex; gap: 50px; align-items: center; justify-content: center; flex-wrap: wrap; }
+.gauge-item { text-align: center; }
+.gauge-svg { width: 180px; height: 100px; }
+.gauge-label { font-size: 14px; color: rgba(255,255,255,0.6); margin-top: 8px; }
+.gauge-value-text { font-size: 22px; font-weight: 700; margin-top: 4px; }
+
+/* ===== BALANCE SHEET ===== */
+.balance-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; width: 100%; max-width: 900px; }
+.balance-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 28px; }
+.balance-card-title { font-size: 13px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
+.balance-card-value { font-size: 32px; font-weight: 700; }
+.balance-card-sub { font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 6px; }
+
+/* ===== HIGHLIGHTS LIST ===== */
+.highlights-list { list-style: none; width: 100%; max-width: 800px; }
+.highlights-list li { padding: 24px 0; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: flex-start; gap: 16px; font-size: 17px; line-height: 1.5; font-weight: 300; }
+.highlights-list li:last-child { border-bottom: none; }
+.highlight-icon { width: 28px; height: 28px; border-radius: 50%; background: rgba(48,209,88,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; font-size: 14px; }
+
+/* ===== OUTLOOK CARDS ===== */
+.outlook-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%; max-width: 800px; }
+.outlook-card { background: linear-gradient(135deg, rgba(41,151,255,0.08) 0%, rgba(90,200,250,0.04) 100%); border: 1px solid rgba(41,151,255,0.15); border-radius: 16px; padding: 28px; }
+.outlook-card-label { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 10px; }
+.outlook-card-value { font-size: 24px; font-weight: 600; }
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+@keyframes slideInLeft { from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+.slide.active .animate-in { animation: fadeInUp 0.8s ease forwards; }
+.slide.active .animate-scale { animation: scaleIn 0.8s ease forwards; }
+.slide.active .animate-left { animation: slideInLeft 0.8s ease forwards; }
+.delay-1 { animation-delay: 0.1s !important; opacity: 0; }
+.delay-2 { animation-delay: 0.2s !important; opacity: 0; }
+.delay-3 { animation-delay: 0.3s !important; opacity: 0; }
+.delay-4 { animation-delay: 0.4s !important; opacity: 0; }
+.delay-5 { animation-delay: 0.5s !important; opacity: 0; }
+.delay-6 { animation-delay: 0.6s !important; opacity: 0; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .slide { padding: 40px 30px; }
+  .metrics-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .chart-container { flex-direction: column; gap: 30px; }
+  .balance-grid { grid-template-columns: 1fr; }
+  .outlook-grid { grid-template-columns: 1fr; }
+  .bar-chart { gap: 10px; }
+  .bar { width: 24px; }
+}
+</style>
+</head>
+<body>
+<div class="slide-deck" id="slideDeck">
+
+
+<!-- ==================== SLIDE 1: COVER ==================== -->
+<div class="slide slide-cover active" id="slide-1">
+  <div class="apple-logo animate-in delay-1">&#xF8FF;</div>
+  <div class="tag-line animate-in delay-2">Fiscal Year 2026 &middot; Q2 Financial Results</div>
+  <h1 class="hero-title animate-in delay-3">A Record<br>March Quarter.</h1>
+  <p class="hero-subtitle animate-in delay-4">Revenue $111.2B &middot; EPS $2.01 &middot; April 30, 2026</p>
+</div>
+
+<!-- ==================== SLIDE 2: KEY METRICS ==================== -->
+<div class="slide slide-dark" id="slide-2">
+  <h2 class="section-title animate-in delay-1">Core Performance</h2>
+  <p class="section-subtitle animate-in delay-2">Record-breaking results across all key financial metrics</p>
+  <div class="metrics-grid">
+    <div class="metric-card animate-in delay-2">
+      <div class="metric-value gradient-text">$111.2B</div>
+      <div class="metric-label">Total Revenue</div>
+      <div class="metric-change">+17% YoY</div>
+    </div>
+    <div class="metric-card animate-in delay-3">
+      <div class="metric-value gradient-gold">$29.6B</div>
+      <div class="metric-label">Net Income</div>
+      <div class="metric-change">+19% YoY</div>
+    </div>
+    <div class="metric-card animate-in delay-4">
+      <div class="metric-value" style="color:#fff">$2.01</div>
+      <div class="metric-label">Diluted EPS</div>
+      <div class="metric-change">+22% YoY</div>
+    </div>
+    <div class="metric-card animate-in delay-4">
+      <div class="metric-value" style="color:#5ac8fa">49.3%</div>
+      <div class="metric-label">Gross Margin</div>
+      <div class="metric-change">+220 bps YoY</div>
+    </div>
+    <div class="metric-card animate-in delay-5">
+      <div class="metric-value" style="color:#bf5af2">$18.9B</div>
+      <div class="metric-label">Operating Expenses</div>
+      <div class="metric-change">+24% YoY</div>
+    </div>
+    <div class="metric-card animate-in delay-6">
+      <div class="metric-value" style="color:#30d158">$28.7B</div>
+      <div class="metric-label">Operating Cash Flow</div>
+      <div class="metric-change">Strong Generation</div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SLIDE 3: REVENUE DONUT CHART ==================== -->
+<div class="slide slide-gradient" id="slide-3">
+  <h2 class="section-title animate-in delay-1">Revenue by Segment</h2>
+  <p class="section-subtitle animate-in delay-2">Product and services mix for Q2 FY2026</p>
+  <div class="chart-container animate-in delay-3">
+    <div class="chart-area">
+      <svg class="donut-chart" viewBox="0 0 200 200" width="300" height="300">
+        <!-- iPhone 51.3% -->
+        <circle cx="100" cy="100" r="80" fill="none" stroke="#2997ff" stroke-width="28"
+          stroke-dasharray="258 500" stroke-dashoffset="0" transform="rotate(-90 100 100)"/>
+        <!-- Services 27.9% -->
+        <circle cx="100" cy="100" r="80" fill="none" stroke="#5ac8fa" stroke-width="28"
+          stroke-dasharray="140 500" stroke-dashoffset="-258" transform="rotate(-90 100 100)"/>
+        <!-- Mac 7.6% -->
+        <circle cx="100" cy="100" r="80" fill="none" stroke="#30d158" stroke-width="28"
+          stroke-dasharray="38 500" stroke-dashoffset="-398" transform="rotate(-90 100 100)"/>
+        <!-- Wearables 7.1% -->
+        <circle cx="100" cy="100" r="80" fill="none" stroke="#bf5af2" stroke-width="28"
+          stroke-dasharray="36 500" stroke-dashoffset="-436" transform="rotate(-90 100 100)"/>
+        <!-- iPad 6.2% -->
+        <circle cx="100" cy="100" r="80" fill="none" stroke="#ff9f0a" stroke-width="28"
+          stroke-dasharray="31 500" stroke-dashoffset="-472" transform="rotate(-90 100 100)"/>
+        <!-- Center -->
+        <circle cx="100" cy="100" r="62" fill="#0a0a1a"/>
+        <text x="100" y="95" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">$111.2B</text>
+        <text x="100" y="115" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="8">Total Revenue</text>
+      </svg>
+    </div>
+    <div class="chart-legend">
+      <div class="legend-item"><span class="legend-dot" style="background:#2997ff"></span>iPhone<span class="legend-value">$57.0B (51.3%)</span></div>
+      <div class="legend-item"><span class="legend-dot" style="background:#5ac8fa"></span>Services<span class="legend-value">$31.0B (27.9%)</span></div>
+      <div class="legend-item"><span class="legend-dot" style="background:#30d158"></span>Mac<span class="legend-value">$8.4B (7.6%)</span></div>
+      <div class="legend-item"><span class="legend-dot" style="background:#bf5af2"></span>Wearables & Home<span class="legend-value">$7.9B (7.1%)</span></div>
+      <div class="legend-item"><span class="legend-dot" style="background:#ff9f0a"></span>iPad<span class="legend-value">$6.9B (6.2%)</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SLIDE 4: SEGMENT GROWTH BAR CHART ==================== -->
+<div class="slide slide-dark" id="slide-4">
+  <h2 class="section-title animate-in delay-1">Segment Growth</h2>
+  <p class="section-subtitle animate-in delay-2">Year-over-year revenue growth by business segment</p>
+  <div class="h-bar-chart animate-in delay-3">
+    <div class="h-bar-item">
+      <div class="h-bar-label">iPhone</div>
+      <div class="h-bar-track">
+        <div class="h-bar-fill" style="width:88%;background:linear-gradient(90deg,#2997ff,#5ac8fa);">+22%</div>
+      </div>
+      <div class="h-bar-value" style="color:#2997ff">$57.0B</div>
+    </div>
+    <div class="h-bar-item">
+      <div class="h-bar-label">Services</div>
+      <div class="h-bar-track">
+        <div class="h-bar-fill" style="width:64%;background:linear-gradient(90deg,#5ac8fa,#64d2ff);">+16%</div>
+      </div>
+      <div class="h-bar-value" style="color:#5ac8fa">$31.0B</div>
+    </div>
+    <div class="h-bar-item">
+      <div class="h-bar-label">iPad</div>
+      <div class="h-bar-track">
+        <div class="h-bar-fill" style="width:32%;background:linear-gradient(90deg,#ff9f0a,#ffd60a);">+8%</div>
+      </div>
+      <div class="h-bar-value" style="color:#ff9f0a">$6.9B</div>
+    </div>
+    <div class="h-bar-item">
+      <div class="h-bar-label">Mac</div>
+      <div class="h-bar-track">
+        <div class="h-bar-fill" style="width:24%;background:linear-gradient(90deg,#30d158,#63e6be);">+6%</div>
+      </div>
+      <div class="h-bar-value" style="color:#30d158">$8.4B</div>
+    </div>
+    <div class="h-bar-item">
+      <div class="h-bar-label">Wearables</div>
+      <div class="h-bar-track">
+        <div class="h-bar-fill" style="width:20%;background:linear-gradient(90deg,#bf5af2,#da8fff);">+5%</div>
+      </div>
+      <div class="h-bar-value" style="color:#bf5af2">$7.9B</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ==================== SLIDE 5: YoY COMPARISON BAR CHART ==================== -->
+<div class="slide slide-gradient" id="slide-5">
+  <h2 class="section-title animate-in delay-1">Year-over-Year</h2>
+  <p class="section-subtitle animate-in delay-2">Q2 FY2025 vs Q2 FY2026 Financial Comparison</p>
+  <div class="bar-chart animate-in delay-3">
+    <div class="bar-group">
+      <div class="bar-wrapper">
+        <div class="bar" style="height:160px;background:rgba(41,151,255,0.4);">
+          <span class="bar-value" style="color:rgba(255,255,255,0.6)">$95.4B</span>
+        </div>
+        <div class="bar" style="height:186px;background:linear-gradient(180deg,#2997ff,#5ac8fa);">
+          <span class="bar-value">$111.2B</span>
+        </div>
+      </div>
+      <div class="bar-label">Revenue</div>
+    </div>
+    <div class="bar-group">
+      <div class="bar-wrapper">
+        <div class="bar" style="height:130px;background:rgba(48,209,88,0.4);">
+          <span class="bar-value" style="color:rgba(255,255,255,0.6)">$24.8B</span>
+        </div>
+        <div class="bar" style="height:155px;background:linear-gradient(180deg,#30d158,#63e6be);">
+          <span class="bar-value">$29.6B</span>
+        </div>
+      </div>
+      <div class="bar-label">Net Income</div>
+    </div>
+    <div class="bar-group">
+      <div class="bar-wrapper">
+        <div class="bar" style="height:132px;background:rgba(191,90,242,0.4);">
+          <span class="bar-value" style="color:rgba(255,255,255,0.6)">$1.65</span>
+        </div>
+        <div class="bar" style="height:161px;background:linear-gradient(180deg,#bf5af2,#da8fff);">
+          <span class="bar-value">$2.01</span>
+        </div>
+      </div>
+      <div class="bar-label">EPS</div>
+    </div>
+    <div class="bar-group">
+      <div class="bar-wrapper">
+        <div class="bar" style="height:141px;background:rgba(255,159,10,0.4);">
+          <span class="bar-value" style="color:rgba(255,255,255,0.6)">47.1%</span>
+        </div>
+        <div class="bar" style="height:164px;background:linear-gradient(180deg,#ff9f0a,#ffd60a);">
+          <span class="bar-value">49.3%</span>
+        </div>
+      </div>
+      <div class="bar-label">Gross Margin</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:24px;margin-top:30px;font-size:13px;color:rgba(255,255,255,0.5);" class="animate-in delay-4">
+    <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:rgba(255,255,255,0.3);margin-right:6px;vertical-align:middle;"></span>Q2 FY2025</span>
+    <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:linear-gradient(180deg,#2997ff,#5ac8fa);margin-right:6px;vertical-align:middle;"></span>Q2 FY2026</span>
+  </div>
+</div>
+
+<!-- ==================== SLIDE 6: GROSS MARGIN GAUGE ==================== -->
+<div class="slide slide-dark" id="slide-6">
+  <h2 class="section-title animate-in delay-1">Gross Margin Analysis</h2>
+  <p class="section-subtitle animate-in delay-2">Profitability metrics across product and services</p>
+  <div class="gauge-container animate-in delay-3">
+    <div class="gauge-item">
+      <svg class="gauge-svg" viewBox="0 0 200 110">
+        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="16" stroke-linecap="round"/>
+        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#gaugeGrad1)" stroke-width="16" stroke-linecap="round" stroke-dasharray="251" stroke-dashoffset="127"/>
+        <defs><linearGradient id="gaugeGrad1"><stop offset="0%" stop-color="#2997ff"/><stop offset="100%" stop-color="#5ac8fa"/></linearGradient></defs>
+      </svg>
+      <div class="gauge-value-text" style="color:#5ac8fa">49.3%</div>
+      <div class="gauge-label">Overall Margin</div>
+    </div>
+    <div class="gauge-item">
+      <svg class="gauge-svg" viewBox="0 0 200 110">
+        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="16" stroke-linecap="round"/>
+        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#gaugeGrad2)" stroke-width="16" stroke-linecap="round" stroke-dasharray="251" stroke-dashoffset="154"/>
+        <defs><linearGradient id="gaugeGrad2"><stop offset="0%" stop-color="#ff9f0a"/><stop offset="100%" stop-color="#ffd60a"/></linearGradient></defs>
+      </svg>
+      <div class="gauge-value-text" style="color:#ff9f0a">38.7%</div>
+      <div class="gauge-label">Product Margin</div>
+    </div>
+    <div class="gauge-item">
+      <svg class="gauge-svg" viewBox="0 0 200 110">
+        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="16" stroke-linecap="round"/>
+        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#gaugeGrad3)" stroke-width="16" stroke-linecap="round" stroke-dasharray="251" stroke-dashoffset="59"/>
+        <defs><linearGradient id="gaugeGrad3"><stop offset="0%" stop-color="#30d158"/><stop offset="100%" stop-color="#63e6be"/></linearGradient></defs>
+      </svg>
+      <div class="gauge-value-text" style="color:#30d158">76.7%</div>
+      <div class="gauge-label">Services Margin</div>
+    </div>
+  </div>
+  <div style="margin-top:40px;text-align:center;max-width:600px;" class="animate-in delay-4">
+    <p style="font-size:15px;color:rgba(255,255,255,0.5);line-height:1.6;">Services margin at 76.7% continues to drive overall profitability higher. Product margin at 38.7% reflects memory cost pressures, while blended margin expanded 220bps YoY to 49.3%.</p>
+  </div>
+</div>
+
+<!-- ==================== SLIDE 7: REVENUE TREND LINE CHART ==================== -->
+<div class="slide slide-gradient" id="slide-7">
+  <h2 class="section-title animate-in delay-1">Revenue Trajectory</h2>
+  <p class="section-subtitle animate-in delay-2">Quarterly revenue trend with record March quarter growth</p>
+  <div class="line-chart-wrapper animate-in delay-3">
+    <svg viewBox="0 0 900 300" width="100%" height="100%" class="line-chart-svg">
+      <!-- Grid lines -->
+      <line x1="80" y1="40" x2="850" y2="40" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+      <line x1="80" y1="105" x2="850" y2="105" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+      <line x1="80" y1="170" x2="850" y2="170" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+      <line x1="80" y1="235" x2="850" y2="235" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+      <!-- Y axis labels -->
+      <text x="70" y="44" text-anchor="end" fill="rgba(255,255,255,0.4)" font-size="11">$120B</text>
+      <text x="70" y="109" text-anchor="end" fill="rgba(255,255,255,0.4)" font-size="11">$100B</text>
+      <text x="70" y="174" text-anchor="end" fill="rgba(255,255,255,0.4)" font-size="11">$80B</text>
+      <text x="70" y="239" text-anchor="end" fill="rgba(255,255,255,0.4)" font-size="11">$60B</text>
+      <!-- X axis labels -->
+      <text x="145" y="275" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="11">Q1'25</text>
+      <text x="300" y="275" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="11">Q2'25</text>
+      <text x="455" y="275" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="11">Q3'25</text>
+      <text x="610" y="275" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="11">Q4'25</text>
+      <text x="765" y="275" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="11">Q2'26</text>
+      <!-- Area fill -->
+      <path d="M145,30 L300,135 L455,175 L610,115 L765,25 L765,250 L145,250 Z" fill="url(#areaGrad)" opacity="0.3"/>
+      <defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2997ff" stop-opacity="0.4"/><stop offset="100%" stop-color="#2997ff" stop-opacity="0"/></linearGradient></defs>
+      <!-- Line -->
+      <polyline points="145,30 300,135 455,175 610,115 765,25" fill="none" stroke="url(#lineGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <defs><linearGradient id="lineGrad"><stop offset="0%" stop-color="#2997ff"/><stop offset="100%" stop-color="#5ac8fa"/></linearGradient></defs>
+      <!-- Data points -->
+      <circle cx="145" cy="30" r="5" fill="#2997ff" stroke="#000" stroke-width="2"/>
+      <circle cx="300" cy="135" r="5" fill="#2997ff" stroke="#000" stroke-width="2"/>
+      <circle cx="455" cy="175" r="5" fill="#2997ff" stroke="#000" stroke-width="2"/>
+      <circle cx="610" cy="115" r="5" fill="#2997ff" stroke="#000" stroke-width="2"/>
+      <circle cx="765" cy="25" r="6" fill="#5ac8fa" stroke="#fff" stroke-width="2"/>
+      <!-- Labels on points -->
+      <text x="145" y="18" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">$124.3B</text>
+      <text x="300" y="123" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="11">$95.4B</text>
+      <text x="455" y="195" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="11">$85.8B</text>
+      <text x="610" y="103" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="11">$94.9B</text>
+      <text x="765" y="13" text-anchor="middle" fill="#5ac8fa" font-size="12" font-weight="700">$111.2B &#9733;</text>
+    </svg>
+  </div>
+</div>
+
+
+<!-- ==================== SLIDE 8: BALANCE SHEET & CAPITAL RETURN ==================== -->
+<div class="slide slide-dark" id="slide-8">
+  <h2 class="section-title animate-in delay-1">Capital & Balance Sheet</h2>
+  <p class="section-subtitle animate-in delay-2">Strong financial position and shareholder returns</p>
+  <div class="balance-grid animate-in delay-3">
+    <div class="balance-card">
+      <div class="balance-card-title">Cash & Securities</div>
+      <div class="balance-card-value" style="color:#5ac8fa">$147B</div>
+      <div class="balance-card-sub">Total liquid assets on hand</div>
+    </div>
+    <div class="balance-card">
+      <div class="balance-card-title">Total Debt</div>
+      <div class="balance-card-value" style="color:#ff453a">$85B</div>
+      <div class="balance-card-sub">Long & short-term obligations</div>
+    </div>
+    <div class="balance-card">
+      <div class="balance-card-title">Net Cash Position</div>
+      <div class="balance-card-value" style="color:#30d158">$62B</div>
+      <div class="balance-card-sub">Cash minus total debt</div>
+    </div>
+    <div class="balance-card">
+      <div class="balance-card-title">Operating Cash Flow</div>
+      <div class="balance-card-value" style="color:#bf5af2">$28.7B</div>
+      <div class="balance-card-sub">Generated this quarter</div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SLIDE 9: SHAREHOLDER RETURNS PIE ==================== -->
+<div class="slide slide-gradient" id="slide-9">
+  <h2 class="section-title animate-in delay-1">Shareholder Returns</h2>
+  <p class="section-subtitle animate-in delay-2">Capital allocation and dividend program</p>
+  <div class="chart-container animate-in delay-3">
+    <div class="chart-area">
+      <svg viewBox="0 0 200 200" width="280" height="280">
+        <!-- Share Buyback portion -->
+        <circle cx="100" cy="100" r="80" fill="none" stroke="#2997ff" stroke-width="32"
+          stroke-dasharray="352 500" stroke-dashoffset="0" transform="rotate(-90 100 100)"/>
+        <!-- Dividend portion -->
+        <circle cx="100" cy="100" r="80" fill="none" stroke="#30d158" stroke-width="32"
+          stroke-dasharray="50 500" stroke-dashoffset="-352" transform="rotate(-90 100 100)"/>
+        <!-- New Authorization -->
+        <circle cx="100" cy="100" r="80" fill="none" stroke="#ff9f0a" stroke-width="32"
+          stroke-dasharray="100 500" stroke-dashoffset="-402" transform="rotate(-90 100 100)"/>
+        <circle cx="100" cy="100" r="60" fill="#0a0a1a"/>
+        <text x="100" y="97" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">Capital</text>
+        <text x="100" y="113" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="9">Return</text>
+      </svg>
+    </div>
+    <div class="chart-legend" style="gap:20px;">
+      <div class="legend-item" style="font-size:16px;">
+        <span class="legend-dot" style="background:#2997ff;width:14px;height:14px;"></span>
+        <div>
+          <div style="font-weight:600;">Share Repurchases</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-top:4px;">$11B &middot; 42M shares</div>
+        </div>
+      </div>
+      <div class="legend-item" style="font-size:16px;">
+        <span class="legend-dot" style="background:#30d158;width:14px;height:14px;"></span>
+        <div>
+          <div style="font-weight:600;">Quarterly Dividend</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-top:4px;">$0.27/share &middot; +4% increase</div>
+        </div>
+      </div>
+      <div class="legend-item" style="font-size:16px;">
+        <span class="legend-dot" style="background:#ff9f0a;width:14px;height:14px;"></span>
+        <div>
+          <div style="font-weight:600;">New Buyback Authorization</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-top:4px;">$100B additional approved</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;padding:12px 16px;background:rgba(255,255,255,0.04);border-radius:10px;border:1px solid rgba(255,255,255,0.06);">
+        <div style="font-size:12px;color:rgba(255,255,255,0.4);">Dividend Payment Date</div>
+        <div style="font-size:15px;font-weight:600;margin-top:4px;">May 14, 2026</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SLIDE 10: YoY COMPARISON TABLE ==================== -->
+<div class="slide slide-dark" id="slide-10">
+  <h2 class="section-title animate-in delay-1">Detailed Comparison</h2>
+  <p class="section-subtitle animate-in delay-2">Q2 FY2025 vs Q2 FY2026 side-by-side analysis</p>
+  <table class="comparison-table animate-in delay-3">
+    <thead>
+      <tr>
+        <th>Metric</th>
+        <th>Q2 FY2025</th>
+        <th>Q2 FY2026</th>
+        <th>Change</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-weight:500;">Total Revenue</td>
+        <td style="color:rgba(255,255,255,0.6);">$95.4B</td>
+        <td style="font-weight:600;">$111.2B</td>
+        <td class="highlight">+17%</td>
+      </tr>
+      <tr>
+        <td style="font-weight:500;">Net Income</td>
+        <td style="color:rgba(255,255,255,0.6);">$24.8B</td>
+        <td style="font-weight:600;">$29.6B</td>
+        <td class="highlight">+19%</td>
+      </tr>
+      <tr>
+        <td style="font-weight:500;">Diluted EPS</td>
+        <td style="color:rgba(255,255,255,0.6);">$1.65</td>
+        <td style="font-weight:600;">$2.01</td>
+        <td class="highlight">+22%</td>
+      </tr>
+      <tr>
+        <td style="font-weight:500;">Gross Margin</td>
+        <td style="color:rgba(255,255,255,0.6);">47.1%</td>
+        <td style="font-weight:600;">49.3%</td>
+        <td class="highlight">+220 bps</td>
+      </tr>
+      <tr>
+        <td style="font-weight:500;">iPhone Revenue</td>
+        <td style="color:rgba(255,255,255,0.6);">$46.7B</td>
+        <td style="font-weight:600;">$57.0B</td>
+        <td class="highlight">+22%</td>
+      </tr>
+      <tr>
+        <td style="font-weight:500;">Services Revenue</td>
+        <td style="color:rgba(255,255,255,0.6);">$26.7B</td>
+        <td style="font-weight:600;">$31.0B</td>
+        <td class="highlight">+16%</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ==================== SLIDE 11: KEY HIGHLIGHTS ==================== -->
+<div class="slide slide-gradient" id="slide-11">
+  <h2 class="section-title animate-in delay-1">Key Highlights</h2>
+  <p class="section-subtitle animate-in delay-2">Strategic milestones and business developments</p>
+  <ul class="highlights-list animate-in delay-3">
+    <li>
+      <span class="highlight-icon">&#9679;</span>
+      <span><strong style="color:#2997ff">iPhone 17 Series</strong> &mdash; Most popular iPhone lineup in company history from launch through March, driving 22% segment growth</span>
+    </li>
+    <li>
+      <span class="highlight-icon">&#9679;</span>
+      <span><strong style="color:#5ac8fa">March Quarter Record</strong> &mdash; Revenue exceeded the high end of 13%-16% guidance, achieving 17% actual growth to $111.2B</span>
+    </li>
+    <li>
+      <span class="highlight-icon">&#9679;</span>
+      <span><strong style="color:#30d158">Services Momentum</strong> &mdash; Services revenue reached $31.0B with industry-leading 76.7% gross margin</span>
+    </li>
+    <li>
+      <span class="highlight-icon">&#9679;</span>
+      <span><strong style="color:#bf5af2">Leadership Transition</strong> &mdash; Tim Cook announced CEO succession plan; first earnings call since the announcement</span>
+    </li>
+    <li>
+      <span class="highlight-icon">&#9679;</span>
+      <span><strong style="color:#ff9f0a">Supply Challenges</strong> &mdash; Results achieved despite supply constraints and rising memory costs during the quarter</span>
+    </li>
+  </ul>
+</div>
+
+
+<!-- ==================== SLIDE 12: Q3 OUTLOOK ==================== -->
+<div class="slide slide-dark" id="slide-12">
+  <h2 class="section-title animate-in delay-1">Q3 FY2026 Outlook</h2>
+  <p class="section-subtitle animate-in delay-2">Forward guidance for the June quarter</p>
+  <div class="outlook-grid animate-in delay-3">
+    <div class="outlook-card">
+      <div class="outlook-card-label">Gross Margin Guidance</div>
+      <div class="outlook-card-value" style="color:#5ac8fa">47.5% &ndash; 48.5%</div>
+    </div>
+    <div class="outlook-card">
+      <div class="outlook-card-label">Operating Expenses</div>
+      <div class="outlook-card-value" style="color:#bf5af2">$18.8B &ndash; $19.1B</div>
+    </div>
+    <div class="outlook-card" style="border-color:rgba(48,209,88,0.15);background:linear-gradient(135deg,rgba(48,209,88,0.08) 0%,rgba(99,230,190,0.04) 100%);">
+      <div class="outlook-card-label">Dividend Payment</div>
+      <div class="outlook-card-value" style="color:#30d158">$0.27/share</div>
+    </div>
+    <div class="outlook-card" style="border-color:rgba(255,159,10,0.15);background:linear-gradient(135deg,rgba(255,159,10,0.08) 0%,rgba(255,214,10,0.04) 100%);">
+      <div class="outlook-card-label">New Buyback Program</div>
+      <div class="outlook-card-value" style="color:#ff9f0a">$100B Authorized</div>
+    </div>
+  </div>
+  <div style="margin-top:40px;padding:20px 32px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;max-width:700px;text-align:center;" class="animate-in delay-4">
+    <p style="font-size:14px;color:rgba(255,255,255,0.5);line-height:1.6;">Apple continues to invest aggressively in AI, services, and silicon development while returning substantial capital to shareholders. Supply chain diversification remains a priority heading into the back half of FY2026.</p>
+  </div>
+</div>
+
+<!-- ==================== SLIDE 13: CLOSING ==================== -->
+<div class="slide slide-cover" id="slide-13">
+  <div class="apple-logo animate-in delay-1">&#xF8FF;</div>
+  <h1 class="hero-title animate-in delay-2" style="font-size:clamp(40px,5vw,72px);">Record Quarter.<br><span class="gradient-text">Limitless Future.</span></h1>
+  <p class="hero-subtitle animate-in delay-3" style="max-width:600px;line-height:1.6;">Apple delivered its strongest March quarter in history with $111.2B in revenue, proving the enduring strength of its ecosystem and the transformative impact of Apple Intelligence.</p>
+  <div style="margin-top:40px;display:flex;gap:30px;" class="animate-in delay-4">
+    <div style="text-align:center;">
+      <div style="font-size:28px;font-weight:700;color:#2997ff;">$111.2B</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">REVENUE</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="font-size:28px;font-weight:700;color:#30d158;">+17%</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">GROWTH</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="font-size:28px;font-weight:700;color:#bf5af2;">$2.01</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">EPS</div>
+    </div>
+  </div>
+  <p style="margin-top:50px;font-size:13px;color:rgba(255,255,255,0.3);" class="animate-in delay-5">Apple Inc. &middot; Q2 FY2026 Earnings &middot; April 30, 2026</p>
+</div>
+
+</div><!-- End slide-deck -->
+
+<!-- ===== NAVIGATION UI ===== -->
+<button class="nav-arrow prev" onclick="changeSlide(-1)">&#8249;</button>
+<button class="nav-arrow next" onclick="changeSlide(1)">&#8250;</button>
+<div class="nav-controls" id="navDots"></div>
+<div class="slide-counter" id="slideCounter">1 / 13</div>
+
+<!-- ===== JAVASCRIPT ENGINE ===== -->
+<script>
+(function() {
+  const slides = document.querySelectorAll('.slide');
+  const totalSlides = slides.length;
+  let currentSlide = 0;
+  let isTransitioning = false;
+
+  // Build navigation dots
+  const dotsContainer = document.getElementById('navDots');
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    dot.onclick = () => goToSlide(i);
+    dotsContainer.appendChild(dot);
+  }
+
+  function updateSlide() {
+    slides.forEach((slide, i) => {
+      slide.classList.toggle('active', i === currentSlide);
+    });
+    document.querySelectorAll('.nav-dot').forEach((dot, i) => {
+      dot.classList.toggle('active', i === currentSlide);
+    });
+    document.getElementById('slideCounter').textContent = (currentSlide + 1) + ' / ' + totalSlides;
+  }
+
+  function goToSlide(index) {
+    if (isTransitioning || index === currentSlide) return;
+    isTransitioning = true;
+    currentSlide = index;
+    updateSlide();
+    setTimeout(() => { isTransitioning = false; }, 800);
+  }
+
+  window.changeSlide = function(dir) {
+    let next = currentSlide + dir;
+    if (next < 0) next = totalSlides - 1;
+    if (next >= totalSlides) next = 0;
+    goToSlide(next);
+  };
+
+  // Keyboard navigation
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+      e.preventDefault();
+      changeSlide(1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      changeSlide(-1);
+    }
+  });
+
+  // Touch/swipe support
+  let touchStartX = 0;
+  document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+  document.addEventListener('touchend', (e) => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) changeSlide(diff > 0 ? 1 : -1);
+  });
+
+  // Mouse wheel
+  let wheelTimeout;
+  document.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    clearTimeout(wheelTimeout);
+    wheelTimeout = setTimeout(() => {
+      changeSlide(e.deltaY > 0 ? 1 : -1);
+    }, 100);
+  }, { passive: false });
+
+  updateSlide();
+})();
+</script>
+</body>
+</html>
